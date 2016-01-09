@@ -59,8 +59,8 @@ training_norm <- data.frame(training_norm, classe = training$classe)
 
 Train the model using random forest.
 ```{r, cahce = TRUE}
+set.seed(2)
 model <- train(classe ~ ., data = training_norm, method = "rf")
-print('Run again')
 pred_train <- predict(model, training_norm)
 confusionMatrix(pred_train, training_norm$classe)
 ```

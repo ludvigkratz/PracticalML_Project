@@ -216,12 +216,11 @@ training_norm &lt;- data.frame(training_norm, classe = training$classe)
 <div id="training" class="section level2">
 <h2>Training</h2>
 <p>Train the model using random forest.</p>
-<pre class="r"><code>model &lt;- train(classe ~ ., data = training_norm, method = &quot;rf&quot;)</code></pre>
+<pre class="r"><code>set.seed(2)
+model &lt;- train(classe ~ ., data = training_norm, method = &quot;rf&quot;)</code></pre>
 <pre><code>## Loading required package: randomForest
 ## randomForest 4.6-10
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre class="r"><code>print('Run again')</code></pre>
-<pre><code>## [1] &quot;Run again&quot;</code></pre>
 <pre class="r"><code>pred_train &lt;- predict(model, training_norm)
 confusionMatrix(pred_train, training_norm$classe)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
