@@ -1,0 +1,83 @@
+---
+title: "Practical Machine Learing: Course Project"
+output: 
+  html_document:
+    keep_md: true
+---
+Ludvig Kratz
+2016-01-08
+Coursera
+
+##Initial Data Analysis
+
+Load the training data and look at some values.
+
+```{r, cache = TRUE}
+training <- read.csv('pml-training.csv')
+#training <- training[, -1] #X Seems to be index
+sapply(training, class)
+summary(training$classe)
+summary(training$user_name)
+```
+
+Since the testing set consist of 1 row per classe, I predict on a row-by-rwo basis.
+
+Let us find which features to use.
+
+##Pre Processing
+
+First we find the percentage the missing values in each column. We remove the columns with a lot of NAs.
+```{r, cache = TRUE}
+percentage_na <- sapply(training, function(x) {sum(is.na(x)) / length(x)})
+large_na <- percentage_na[percentage_na > 0.5]
+dim(training)
+training <- training[, !(percentage_na > 0.5)]
+dim(training)
+```
+
+Let us look at variance. We remove the features with near zero varinace. Since we look at each row independtly, the time should not affect the classe and we remove those features. The same applies to user_name and row index.
+```{r, message = FALSE, cache = FALSE}
+library(caret)
+nsv <- nearZeroVar(training, saveMetrics = TRUE)
+training <- training[, !nsv$nzv]
+training <- training[, -c(1:5)]
+dim(training)
+col_names <- names(training)
+```
+
+
+Center and scale the data.
+```{r, cache = TRUE}
+preObj <- preProcess(training[,-54], method = c("center", "scale"))
+training_norm <- predict(preObj, training[,-54])
+training_norm <- data.frame(training_norm, classe = training$classe)
+#sapply(training_norm, mean)
+#sapply(training_norm, sd)
+```
+
+##Training
+
+Train the model using random forest.
+```{r, cahce = TRUE}
+model <- train(classe ~ ., data = training_norm, method = "rf")
+print('Run again')
+pred_train <- predict(model, training_norm)
+confusionMatrix(pred_train, training_norm$classe)
+```
+
+#Prediction
+
+Predict on testing data. First load and preprocess the test data.
+```{r, cache = TRUE}
+testing <- read.csv('pml-testing.csv')
+testing <- testing[, which(names(testing) %in% names(training))]
+testing_norm <- predict(preObj, testing)
+```
+
+```{r}
+pred_test <- predict(model, testing_norm)
+print(pred_test)
+```
+
+Random forest takes a long time to run but obtains 100 accuracy on both training and testing data.
+
